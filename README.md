@@ -2,14 +2,16 @@
 
 🇧🇷 [Versão em português](README.pt-BR.md)
 
+**[Try the live dashboard](https://diabetes-readmission-8ztcjw42gda224o5v9ckti.streamlit.app/?lang=en)**
+
 An end-to-end data project, from a raw clinical dataset to a decision-support dashboard, built around one clinical question:
 
 > **Which patients with diabetes are most likely to be readmitted within 30 days of discharge — and what could the nursing team do about it?**
 
 The project combines **data engineering and data science** (SQL, a Python ETL pipeline, machine learning and a dashboard) with **clinical nursing interpretation**. Each finding becomes a care hypothesis and a proposed protocol with monitoring indicators.
 
-![Readmission risk dashboard](reports/figures/dashboard.png)
-<sub>The dashboard: enter the details of an admission and get a risk tier, the patient's position among test-set admissions, and the risk factors present. The interface is in Portuguese.</sub>
+![Readmission risk dashboard](reports/figures/dashboard_en.png)
+<sub>The dashboard (English and Portuguese): enter the details of an admission and get a risk tier shown as a hospital wristband, the patient's position among test-set admissions, the risk factors present and suggested transition-of-care actions.</sub>
 
 ---
 
@@ -65,9 +67,9 @@ flowchart LR
 | [`etl/pipeline.py`](etl/pipeline.py) | Removes ineligible admissions, creates the target, groups ICD-9 codes by body system, handles nulls and builds history features. Validates the output before saving |
 | [`notebooks/01_analise_exploratoria.ipynb`](notebooks/01_analise_exploratoria.ipynb) | Rates by factor with confidence intervals, clinical discussion, care protocols and references |
 | [`notebooks/02_modelo.ipynb`](notebooks/02_modelo.ipynb) | Model comparison, risk stratification, interpretation, subgroup analysis and clinical application |
-| [`app/app.py`](app/app.py) | Dashboard: scores an admission and shows the key findings |
+| [`app/app.py`](app/app.py) | Bilingual dashboard (EN/PT): scores an admission and shows the key findings |
 
-> The notebooks and the dashboard are written in Portuguese. Each notebook opens with an executive summary.
+> The dashboard is bilingual (English and Portuguese). The notebooks are written in Portuguese, and each one opens with an executive summary.
 
 ## Methodological choices
 
@@ -118,8 +120,6 @@ diabetes-readmission/
 ## Next steps
 
 - Calibrate probabilities and test functional and social variables to improve performance in older patients
-- Deploy the dashboard online (Streamlit Community Cloud)
-- Move the pipeline to the cloud (AWS S3 for storage, AWS Lambda for processing)
 - Validate on more recent data with dates, comorbidities and post-discharge information
 
 ## Main references
@@ -134,5 +134,7 @@ The full reference list is in section 9 of the [exploratory analysis](notebooks/
 ## Author
 
 **Leticia Mendes**: a portfolio project bringing clinical nursing experience together with data engineering and data science.
+
+[LinkedIn](https://www.linkedin.com/in/let%C3%ADcia-mendes-a2127b1b5) · [GitHub](https://github.com/leticiamendes-data)
 
 > The proposed protocols are recommendations for discussion and institutional development. They do not replace current clinical protocols, multidisciplinary assessment or individualised care decisions. The dashboard is a portfolio project and must not be used for real clinical decisions.

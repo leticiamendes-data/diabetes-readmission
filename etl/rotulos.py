@@ -87,9 +87,34 @@ CATEGORIAS = {
 }
 
 
-def rotulo(valor) -> str:
-    """Nome em portugues de um valor de categoria."""
-    return CATEGORIAS.get(valor, str(valor).replace("_", " "))
+# Versao em ingles das categorias (usada pelo dashboard no modo EN).
+CATEGORIAS_EN = {
+    "Female": "Female", "Male": "Male",
+    "Caucasian": "White", "AfricanAmerican": "Black (African American)",
+    "Hispanic": "Hispanic", "Asian": "Asian", "Other": "Other", "Desconhecida": "Not recorded",
+    "Nao_medido": "Not measured", "Norm": "Normal",
+    "No": "Not used", "Steady": "Dose kept", "Up": "Dose increased", "Down": "Dose decreased",
+    "Casa": "Home", "Casa_com_home_care": "Home with home health care",
+    "SNF": "Skilled nursing facility", "ICF": "Intermediate care facility",
+    "Reabilitacao": "Rehabilitation", "Outro_hospital": "Another hospital",
+    "Longa_permanencia": "Long-term care hospital", "Alta_a_pedido": "Left against medical advice",
+    "Psiquiatria": "Psychiatric hospital", "Outro_ou_desconhecido": "Other / unknown",
+    "Emergencia": "Emergency", "Urgencia": "Urgent", "Eletiva": "Elective",
+    "Pronto_socorro": "Emergency department", "Encaminhamento": "Referral",
+    "Transferencia": "Transfer",
+    "Circulatorio": "Circulatory", "Respiratorio": "Respiratory", "Digestivo": "Digestive",
+    "Diabetes": "Diabetes", "Lesao_Trauma": "Injury / trauma",
+    "Musculoesqueletico": "Musculoskeletal", "Geniturinario": "Genitourinary",
+    "Neoplasias": "Neoplasms", "Outros": "Other", "Ausente": "Not recorded",
+    "Nao_informada": "Not recorded", "Outras": "Other",
+    "Nao_informado": "Not recorded",
+}
+
+
+def rotulo(valor, idioma: str = "pt") -> str:
+    """Nome de um valor de categoria em portugues ('pt') ou ingles ('en')."""
+    tabela = CATEGORIAS_EN if idioma == "en" else CATEGORIAS
+    return tabela.get(valor, str(valor).replace("_", " "))
 
 
 def nome_variavel(coluna: str) -> str:

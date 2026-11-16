@@ -2,6 +2,8 @@
 
 🇬🇧 [English version](README.md)
 
+**[Abrir o dashboard online](https://diabetes-readmission-8ztcjw42gda224o5v9ckti.streamlit.app/)**
+
 Projeto completo de dados, do dataset bruto até um dashboard de apoio à decisão, para responder a uma pergunta clínica:
 
 > **Quais pacientes diabéticos têm maior chance de voltar ao hospital em até 30 dias após a alta — e o que a equipe de enfermagem poderia fazer a respeito?**
@@ -64,7 +66,7 @@ flowchart LR
 | [`etl/pipeline.py`](etl/pipeline.py) | Remove internações não elegíveis, cria o alvo, agrupa os CID-9 por sistema, trata nulos e cria variáveis de histórico. Valida o resultado antes de salvar |
 | [`notebooks/01_analise_exploratoria.ipynb`](notebooks/01_analise_exploratoria.ipynb) | Taxas por fator com intervalo de confiança, discussão clínica, protocolos e referências |
 | [`notebooks/02_modelo.ipynb`](notebooks/02_modelo.ipynb) | Comparação de modelos, estratificação de risco, interpretação e aplicação assistencial |
-| [`app/app.py`](app/app.py) | Dashboard: calcula o risco de uma internação e mostra os principais achados |
+| [`app/app.py`](app/app.py) | Dashboard bilíngue (PT/EN): calcula o risco de uma internação e mostra os principais achados |
 
 ## Decisões de método
 
@@ -116,8 +118,6 @@ diabetes-readmission/
 ## Próximos passos
 
 - Calibrar as probabilidades e testar variáveis funcionais e sociais para melhorar o desempenho em idosos
-- Publicar o dashboard online (Streamlit Community Cloud)
-- Automatizar o pipeline na nuvem: armazenamento no AWS S3 e processamento com AWS Lambda
 - Validar com dados mais recentes, incluindo datas, comorbidades e informações pós-alta
 
 ## Referências principais
@@ -132,5 +132,7 @@ A lista completa está na seção 9 da [análise exploratória](notebooks/01_ana
 ## Autora
 
 **Leticia Mendes**: projeto de portfólio que une a experiência clínica em enfermagem à engenharia e à ciência de dados.
+
+[LinkedIn](https://www.linkedin.com/in/let%C3%ADcia-mendes-a2127b1b5) · [GitHub](https://github.com/leticiamendes-data)
 
 > As propostas de protocolos são recomendações para discussão e desenvolvimento institucional. Não substituem protocolos clínicos vigentes, avaliação multiprofissional ou decisões individualizadas de assistência. O dashboard é um projeto de portfólio e não deve ser usado para decisões clínicas reais.

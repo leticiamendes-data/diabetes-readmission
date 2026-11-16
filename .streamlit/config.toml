@@ -1,13 +1,16 @@
-# Tema claro em tons de azul (mesma paleta dos graficos do projeto).
+# Tema claro: branco, azul e verde-agua (mesma paleta dos graficos do projeto).
 [theme]
 base = "light"
 primaryColor = "#2a78d6"
 backgroundColor = "#ffffff"
-secondaryBackgroundColor = "#eef4fb"
-textColor = "#1d2b3a"
-linkColor = "#1c5cab"
+secondaryBackgroundColor = "#f3f8fd"
+textColor = "#16324f"
+linkColor = "#2a78d6"
 borderColor = "#d5e3f3"
 showWidgetBorder = true
+baseRadius = "0.6rem"
+# Atkinson Hyperlegible: fonte criada para maxima legibilidade (Braille Institute)
+font = "Atkinson Hyperlegible Next:https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;700&display=swap, sans-serif"
 
 [client]
 toolbarMode = "minimal"

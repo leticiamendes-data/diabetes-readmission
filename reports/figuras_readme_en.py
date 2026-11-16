@@ -1,4 +1,4 @@
-"""English versions of the key charts, used in the English README.
+"""English versions of the key charts, used in the English README and the English dashboard.
 
 Run from the project root (after etl/pipeline.py and notebooks/02_modelo.ipynb):
     ./venv/bin/python reports/figuras_readme_en.py
@@ -108,7 +108,31 @@ def main():
                 "Discharge to rehabilitation or another facility: more readmissions",
                 "", "03_discharge_destination.png", geral, horizontal=True)
 
-    # 3. Model: risk deciles and subgroups (same test split as the notebook)
+    # 3. Diabetes care and length of stay (used by the dashboard in English)
+    ordem = ["Nao_medido", "Norm", ">7", ">8"]
+    t = df.groupby("A1Cresult")["readmit_30"].agg(["size", "sum", "mean"]).reindex(ordem)
+    barras_taxa(t, ["Not measured", "Normal", "> 7%", "> 8%"],
+                "HbA1c was not measured in 83% of admissions",
+                "HbA1c result", "04_hba1c.png", geral)
+
+    ordem = ["No", "Steady", "Up", "Down"]
+    t = df.groupby("insulin")["readmit_30"].agg(["size", "sum", "mean"]).reindex(ordem)
+    barras_taxa(t, ["Not used", "Dose kept", "Dose increased", "Dose decreased"],
+                "Insulin adjusted during the stay: more readmissions",
+                "Insulin", "05_insulin.png", geral)
+
+    t = df.groupby("diabetes_complicado")["readmit_30"].agg(["size", "sum", "mean"])
+    barras_taxa(t, ["No", "Yes"],
+                "Diabetes with recorded complications raises readmission",
+                "Any diabetes diagnosis with complications (ICD-9 250.1–250.9)",
+                "06_diabetes_complications.png", geral)
+
+    t = df.groupby("time_in_hospital")["readmit_30"].agg(["size", "sum", "mean"])
+    barras_taxa(t, [str(i) for i in t.index],
+                "Longer stays, more readmissions",
+                "Length of stay (days)", "07_length_of_stay.png", geral)
+
+    # 4. Model: risk deciles and subgroups (same test split as the notebook)
     art = joblib.load(RAIZ / "models" / "modelo_readmissao.joblib")
     y, grupos = df["readmit_30"], df["patient_nbr"]
     X = df.drop(columns=["readmit_30", "patient_nbr"])
