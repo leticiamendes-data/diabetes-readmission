@@ -6,6 +6,7 @@ Como rodar (a partir da raiz do projeto):
 Usa o modelo salvo por notebooks/02_modelo.ipynb (models/modelo_readmissao.joblib).
 """
 
+import sys
 from bisect import bisect_left
 from pathlib import Path
 
@@ -15,6 +16,9 @@ import streamlit as st
 
 RAIZ = Path(__file__).resolve().parents[1]
 FIGURAS = RAIZ / "reports" / "figures"
+sys.path.insert(0, str(RAIZ))
+
+from etl.rotulos import rotulo  # noqa: E402  (nomes em portugues das categorias)
 
 st.set_page_config(page_title="Risco de readmissão — diabetes", page_icon="🩺", layout="wide")
 
@@ -26,33 +30,6 @@ def carregar_modelo():
 
 art = carregar_modelo()
 CAT = art["categorias"]
-
-# Rotulos em portugues para os codigos do dataset.
-ROTULOS = {
-    "Female": "Feminino", "Male": "Masculino",
-    "Caucasian": "Branca", "AfricanAmerican": "Negra", "Hispanic": "Hispânica",
-    "Asian": "Asiática", "Other": "Outra", "Desconhecida": "Não informada",
-    "Nao_medido": "Não medido", "Norm": "Normal",
-    "No": "Não usa", "Steady": "Dose mantida", "Up": "Dose aumentada", "Down": "Dose reduzida",
-    "Casa": "Casa", "Casa_com_home_care": "Casa com home care", "SNF": "SNF (cuidados de enfermagem)",
-    "ICF": "ICF (cuidados intermediários)", "Reabilitacao": "Reabilitação",
-    "Outro_hospital": "Outro hospital", "Longa_permanencia": "Hospital de longa permanência",
-    "Alta_a_pedido": "Alta a pedido", "Psiquiatria": "Hospital psiquiátrico",
-    "Outro_ou_desconhecido": "Outro / desconhecido",
-    "Emergencia": "Emergência", "Urgencia": "Urgência", "Eletiva": "Eletiva",
-    "Pronto_socorro": "Pronto-socorro", "Encaminhamento": "Encaminhamento",
-    "Transferencia": "Transferência",
-    "Circulatorio": "Circulatório", "Respiratorio": "Respiratório", "Digestivo": "Digestivo",
-    "Diabetes": "Diabetes", "Lesao_Trauma": "Lesão / trauma",
-    "Musculoesqueletico": "Musculoesquelético", "Geniturinario": "Geniturinário",
-    "Neoplasias": "Neoplasias", "Outros": "Outros", "Ausente": "Não informado",
-    "Nao_informada": "Não informada", "Outras": "Outras",
-}
-
-
-def rotulo(valor):
-    return ROTULOS.get(valor, str(valor).replace("_", " "))
-
 
 def escolha(label, coluna, ordem=None, **kw):
     opcoes = ordem or CAT[coluna]
@@ -141,14 +118,14 @@ with aba_risco:
 
         st.divider()
         r1, r2, r3 = st.columns(3)
-        r1.metric("Faixa de risco", "🔴 ALTO" if alto else "🟢 Habitual")
+        r1.metric("Faixa de risco", "Alto risco" if alto else "Risco habitual")
         r2.metric("Posição entre as internações do teste", f"maior que {min(percentil, 100)}%")
         r3.metric("Escore do modelo", f"{score:.2f}",
                   help="Escore de 0 a 1. O modelo foi treinado com pesos balanceados, então o escore "
                        "ordena o risco mas não é a probabilidade real de readmissão.")
 
         if alto:
-            st.warning(
+            st.info(
                 "**Paciente entre os 20% de maior risco.** Nesse grupo, cerca de **23%** voltam em "
                 f"até 30 dias (taxa geral: {art['taxa_base']:.0%}).\n\n"
                 "Exemplos de ações de transição de cuidado *(ilustrativas)*: revisar o plano de alta e "
@@ -156,7 +133,7 @@ with aba_risco:
                 "em até 7 dias, contato telefônico em 48–72 h."
             )
         else:
-            st.success(
+            st.info(
                 "Risco dentro do habitual. Mantém-se o plano de alta padrão, com orientação sobre "
                 "sinais de alerta e acompanhamento ambulatorial."
             )

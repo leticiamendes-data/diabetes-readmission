@@ -1,0 +1,16 @@
+# Tema claro em tons de azul (mesma paleta dos graficos do projeto).
+[theme]
+base = "light"
+primaryColor = "#2a78d6"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#eef4fb"
+textColor = "#1d2b3a"
+linkColor = "#1c5cab"
+borderColor = "#d5e3f3"
+showWidgetBorder = true
+
+[client]
+toolbarMode = "minimal"
+
+[browser]
+gatherUsageStats = false
