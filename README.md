@@ -1,144 +1,138 @@
-# Readmissão hospitalar de pacientes diabéticos — dos dados à prevenção
+# Hospital readmission in patients with diabetes — from data to prevention
 
-Projeto completo de dados, do dataset bruto até um dashboard de apoio à decisão, para responder a uma pergunta clínica:
+🇧🇷 [Versão em português](README.pt-BR.md)
 
-> **Quais pacientes diabéticos têm maior chance de voltar ao hospital em até 30 dias após a alta — e o que a equipe de enfermagem poderia fazer a respeito?**
+An end-to-end data project, from a raw clinical dataset to a decision-support dashboard, built around one clinical question:
 
-O projeto combina **engenharia e ciência de dados** (SQL, ETL em Python, Machine Learning, dashboard) com **interpretação clínica de enfermagem**: cada achado vira uma hipótese assistencial e uma proposta de protocolo com indicadores de acompanhamento.
+> **Which patients with diabetes are most likely to be readmitted within 30 days of discharge — and what could the nursing team do about it?**
 
-![Dashboard de risco de readmissão](reports/figures/dashboard.png)
+The project combines **data engineering and data science** (SQL, a Python ETL pipeline, machine learning and a dashboard) with **clinical nursing interpretation**. Each finding becomes a care hypothesis and a proposed protocol with monitoring indicators.
+
+![Readmission risk dashboard](reports/figures/dashboard.png)
+<sub>The dashboard: enter the details of an admission and get a risk tier, the patient's position among test-set admissions, and the risk factors present. The interface is in Portuguese.</sub>
 
 ---
 
-## Principais resultados
+## Key results
 
 | | |
 |---|---|
-| **Fator mais forte** | Readmissão de **8,6%** sem internações no ano anterior, contra **37,1%** com 5 ou mais |
-| **Destino da alta** | **9,3%** de readmissão na alta para casa, contra **27,7%** no encaminhamento para reabilitação |
-| **HbA1c** | Não foi registrada em **83%** das internações. Quem fez o exame teve um pouco menos de readmissão |
-| **Modelo** (gradient boosting) | ROC-AUC **0,686** e PR-AUC **0,243** em pacientes nunca vistos no treino |
-| **Uso prático** | Os **20% de maior risco** concentram **41%** das readmissões. No decil mais alto, **28,4%** voltam; no mais baixo, **3,6%** |
+| **Strongest factor** | Readmission rises from **8.6%** (no admissions in the previous year) to **37.1%** (five or more) |
+| **Discharge destination** | **9.3%** readmission when discharged home vs **27.7%** when discharged to rehabilitation |
+| **HbA1c** | Not recorded in **83%** of admissions. Patients who had the test were readmitted slightly less often |
+| **Model** (gradient boosting) | ROC-AUC **0.686** and PR-AUC **0.243** on patients never seen during training |
+| **Practical value** | The **top 20%** by risk score account for **41%** of all readmissions. In the highest decile **28.4%** are readmitted, vs **3.6%** in the lowest |
+| **Fairness check** | Similar performance across race and gender, but lower for patients **aged 80+** (AUC 0.61). This led to a proposed complementary functional assessment for this group |
 
 <p align="center">
-  <img src="reports/figures/01_internacoes_previas.png" width="49%" alt="Readmissão por internações no ano anterior">
-  <img src="reports/figures/11_decis_de_risco.png" width="49%" alt="Readmissão observada por decil de risco previsto">
+  <img src="reports/figures/en/01_prior_admissions.png" width="49%" alt="Readmission rate by number of admissions in the previous year">
+  <img src="reports/figures/en/11_risk_deciles.png" width="49%" alt="Observed readmission by predicted risk decile">
+</p>
+<p align="center">
+  <img src="reports/figures/en/03_discharge_destination.png" width="49%" alt="Readmission rate by discharge destination">
+  <img src="reports/figures/en/14_subgroups.png" width="49%" alt="Model ROC-AUC by race, gender and age group">
 </p>
 
-**Da análise à prática:** os achados deram origem a quatro propostas de protocolo, cada uma com objetivo, etapas e indicadores, fundamentadas na Política Nacional de Atenção Hospitalar e nas diretrizes da Sociedade Brasileira de Diabetes:
+**From analysis to practice:** the findings led to four proposed care protocols, each with objectives, steps and indicators. They are grounded in Brazil's National Hospital Care Policy (PNHOSP), the Brazilian Diabetes Society guidelines and the American Diabetes Association Standards of Care:
 
-1. Identificação e acompanhamento de pacientes com internações recorrentes
-2. Rastreamento e monitoramento glicêmico hospitalar
-3. Alta segura e educação em saúde para pacientes com diabetes
-4. Transição do cuidado após a alta
+1. Identifying and following up patients with recurrent admissions
+2. In-hospital glucose screening and monitoring
+3. Safe discharge and health education for patients with diabetes
+4. Transition of care after discharge
 
-Os protocolos completos estão na seção 8 de [`01_analise_exploratoria.ipynb`](notebooks/01_analise_exploratoria.ipynb).
+## The data
 
----
+**Diabetes 130-US Hospitals for Years 1999–2008** ([UCI Machine Learning Repository](https://archive.ics.uci.edu/dataset/296/diabetes+130-us+hospitals+for+years+1999-2008)). It has 101,766 admissions of patients with diabetes across 130 US hospitals. Each row is one admission, with demographics, diagnoses (ICD-9), lab tests, medications, prior healthcare use and the readmission outcome.
 
-## Os dados
-
-**Diabetes 130-US Hospitals for Years 1999–2008** ([UCI Machine Learning Repository](https://archive.ics.uci.edu/dataset/296/diabetes+130-us+hospitals+for+years+1999-2008)): 101.766 internações de pacientes diabéticos em 130 hospitais americanos. Cada linha é uma internação, com dados demográficos, diagnósticos (CID-9), exames, medicamentos, histórico de utilização do serviço e o desfecho de readmissão.
-
-Depois da limpeza: **99.340 internações elegíveis** de **69.987 pacientes**. Óbitos e encaminhamentos para hospice foram removidos, porque esses pacientes não têm como ser readmitidos. A taxa de readmissão em menos de 30 dias é de **11,4%**.
+After cleaning there are **99,340 eligible admissions** from **69,987 patients**. Deaths and discharges to hospice were removed, because these patients cannot be readmitted. The 30-day readmission rate is **11.4%**.
 
 ## Pipeline
 
 ```mermaid
 flowchart LR
-    A[CSV bruto] -->|sql/01_limpeza.sql| B[(DuckDB)]
-    B -->|sql/02_exploracao.sql| C[Exploração e validação]
-    B -->|etl/pipeline.py| D[Dataset de modelagem]
-    D --> E[01 · Análise exploratória]
-    D --> F[02 · Modelo preditivo]
-    F -->|modelo .joblib| G[Dashboard Streamlit]
+    A[Raw CSV] -->|sql/01_limpeza.sql| B[(DuckDB)]
+    B -->|sql/02_exploracao.sql| C[Exploration & validation]
+    B -->|etl/pipeline.py| D[Modelling dataset]
+    D --> E[01 · Exploratory analysis]
+    D --> F[02 · Predictive model]
+    F -->|.joblib model| G[Streamlit dashboard]
 ```
 
-| Etapa | O que faz |
+| Step | What it does |
 |---|---|
-| [`sql/01_limpeza.sql`](sql/01_limpeza.sql) | Carrega o CSV no DuckDB, converte `?` em nulo e separa as 3 tabelas de domínio que vêm empilhadas no mesmo arquivo |
-| [`sql/02_exploracao.sql`](sql/02_exploracao.sql) | Qualidade dos dados (nulos, valores inválidos, colunas constantes) e taxa de readmissão por fator |
-| [`etl/pipeline.py`](etl/pipeline.py) | Remove internações não elegíveis, cria o alvo, agrupa os CID-9 por sistema, trata nulos e cria variáveis de histórico. Valida o resultado antes de salvar |
-| [`notebooks/01_analise_exploratoria.ipynb`](notebooks/01_analise_exploratoria.ipynb) | Taxas por fator com intervalo de confiança, discussão clínica, protocolos e referências |
-| [`notebooks/02_modelo.ipynb`](notebooks/02_modelo.ipynb) | Comparação de modelos, estratificação de risco, interpretação e aplicação assistencial |
-| [`app/app.py`](app/app.py) | Dashboard: calcula o risco de uma internação e mostra os principais achados |
+| [`sql/01_limpeza.sql`](sql/01_limpeza.sql) | Loads the CSV into DuckDB, converts `?` to null and splits the three lookup tables that come stacked in a single file |
+| [`sql/02_exploracao.sql`](sql/02_exploracao.sql) | Data quality checks (nulls, invalid values, constant columns) and readmission rates by factor |
+| [`etl/pipeline.py`](etl/pipeline.py) | Removes ineligible admissions, creates the target, groups ICD-9 codes by body system, handles nulls and builds history features. Validates the output before saving |
+| [`notebooks/01_analise_exploratoria.ipynb`](notebooks/01_analise_exploratoria.ipynb) | Rates by factor with confidence intervals, clinical discussion, care protocols and references |
+| [`notebooks/02_modelo.ipynb`](notebooks/02_modelo.ipynb) | Model comparison, risk stratification, interpretation, subgroup analysis and clinical application |
+| [`app/app.py`](app/app.py) | Dashboard: scores an admission and shows the key findings |
 
-## Decisões de método
+> The notebooks and the dashboard are written in Portuguese. Each notebook opens with an executive summary.
 
-- **Treino e teste separados por paciente.** 16 mil pacientes aparecem em mais de uma internação. Se o mesmo paciente caísse nos dois lados, o modelo o "reconheceria" e a métrica ficaria otimista. A separação foi feita por paciente, com uma verificação automática no código.
-- **Métricas para classes desbalanceadas.** Com 11% de positivos, um modelo que sempre responde "não volta" acerta 89% e não serve para nada. Por isso a avaliação usa ROC-AUC, PR-AUC, sensibilidade e precisão, e os modelos são treinados com pesos balanceados.
-- **Comparação com uma base aleatória.** Regressão logística (interpretável) e gradient boosting foram comparados com um classificador aleatório, usando validação cruzada em 5 partes agrupadas por paciente.
-- **Ponto de corte com sentido assistencial.** "Alto risco" corresponde aos 20% de maior escore, um volume plausível para uma intervenção de enfermagem na alta.
-- **Incerteza visível.** Os gráficos da análise exploratória mostram intervalos de confiança de 95%, para não tirar conclusões de grupos pequenos.
+## Methodological choices
 
-## Como rodar
+- **Train/test split by patient.** About 16,000 patients have more than one admission. If the same patient appeared in both sets, the model could "recognise" them and the metrics would be optimistic. The split is grouped by patient, and the code checks automatically that no patient appears on both sides.
+- **Metrics suited to class imbalance.** With 11% positives, a model that always predicts "no readmission" is 89% accurate and useless. Models are evaluated with ROC-AUC, PR-AUC, sensitivity and precision, and trained with balanced class weights.
+- **Baseline comparison.** Logistic regression (interpretable) and gradient boosting are compared against a random classifier, with 5-fold cross-validation grouped by patient.
+- **A clinically meaningful threshold.** "High risk" means the top 20% of scores, a realistic workload for a nursing intervention at discharge.
+- **Visible uncertainty.** Exploratory charts show 95% confidence intervals, and subgroup AUCs show bootstrap intervals, so that small groups don't lead to firm conclusions.
 
-Requer Python 3.12 ou mais recente e o [DuckDB CLI](https://duckdb.org/docs/installation/).
+## How to run
+
+Requires Python 3.12 or newer.
 
 ```bash
 git clone https://github.com/leticiamendes-data/diabetes-readmission.git
 cd diabetes-readmission
-python3 -m venv venv
-./venv/bin/pip install -r requirements.txt
+make setup   # create the virtual environment and install dependencies
+make all     # database -> ETL -> notebooks -> figures (about 1 minute)
+make app     # open the dashboard
 ```
 
-```bash
-# 1. Banco e exploração em SQL
-duckdb data-processed/diabetes.duckdb < sql/01_limpeza.sql
-duckdb data-processed/diabetes.duckdb < sql/02_exploracao.sql
+`make help` lists each step. To open just the dashboard, run `make setup` and `make app`: the trained model is already in `models/`.
 
-# 2. ETL
-./venv/bin/python etl/pipeline.py
-
-# 3. Notebooks (análise e modelo — o segundo salva o modelo usado pelo dashboard)
-./venv/bin/jupyter nbconvert --to notebook --execute --inplace --ExecutePreprocessor.timeout=1200 notebooks/*.ipynb
-
-# 4. Dashboard
-./venv/bin/streamlit run app/app.py
-```
-
-Para abrir só o dashboard, basta o passo 4: o modelo treinado já está em `models/`.
-
-## Estrutura
+## Project structure
 
 ```
 diabetes-readmission/
-├── data-raw/              dataset original (sem alterações)
-├── data-processed/        banco DuckDB e datasets gerados (não versionados)
-├── sql/                   carga e exploração em SQL
-├── etl/                   pipeline ETL e rótulos em português
-├── notebooks/             análise exploratória e modelo
-├── models/                modelo treinado (.joblib)
-├── app/                   dashboard Streamlit
-├── reports/figures/       gráficos usados no README e no dashboard
+├── data-raw/              original dataset (unchanged)
+├── data-processed/        DuckDB database and generated datasets (not versioned)
+├── sql/                   loading and exploration in SQL
+├── etl/                   ETL pipeline and Portuguese labels
+├── notebooks/             exploratory analysis and model
+├── models/                trained model (.joblib)
+├── app/                   Streamlit dashboard
+├── reports/               charts (Portuguese and English) and the README figures script
+├── Makefile               full pipeline in one command
 └── requirements.txt
 ```
 
-## Limitações
+## Limitations
 
-- **Dados históricos (1999–2008) de hospitais dos EUA.** Os padrões podem não refletir a prática atual nem a população brasileira. O modelo precisaria ser revalidado em dados locais antes de qualquer uso real.
-- **Variáveis ausentes.** A base não tem dados sociais, funcionais, de adesão nem de cuidado pós-alta. Isso explica boa parte do desempenho moderado.
-- **Associação não é causa.** Os achados indicam quem tem maior chance de voltar, não por quê. As propostas são hipóteses a serem avaliadas.
-- **Escore não calibrado.** O escore ordena o risco, mas não é a probabilidade real de readmissão.
+- **Historical data (1999–2008) from US hospitals.** Patterns may not reflect current practice or other populations. The model would need local revalidation before any real-world use.
+- **Missing variables.** There are no social, functional, adherence or post-discharge data, which explains much of the moderate performance.
+- **Association is not causation.** The findings show who is more likely to come back, not why. The proposed interventions are hypotheses to be evaluated.
+- **Uncalibrated score.** The score ranks risk but is not the actual probability of readmission.
+- **Weaker performance in older patients.** For patients aged 80+, the score is less able to identify who will be readmitted.
 
-## Próximos passos
+## Next steps
 
-- Calibrar as probabilidades e avaliar o desempenho por subgrupos (raça, gênero, idade), em busca de vieses
-- Publicar o dashboard online (Streamlit Community Cloud)
-- Automatizar o pipeline na nuvem: armazenamento no AWS S3 e processamento com AWS Lambda
-- Validar com dados mais recentes, incluindo datas, comorbidades e informações pós-alta
+- Calibrate probabilities and test functional and social variables to improve performance in older patients
+- Deploy the dashboard online (Streamlit Community Cloud)
+- Move the pipeline to the cloud (AWS S3 for storage, AWS Lambda for processing)
+- Validate on more recent data with dates, comorbidities and post-discharge information
 
-## Referências principais
+## Main references
 
 - Strack, B. et al. *Impact of HbA1c measurement on hospital readmission rates: analysis of 70,000 clinical database patient records.* BioMed Research International, 2014. DOI: [10.1155/2014/781670](https://doi.org/10.1155/2014/781670)
-- Brasil. Ministério da Saúde. *Política Nacional de Atenção Hospitalar* (Portaria nº 3.390/2013; Portaria de Consolidação nº 2/2017, Anexo XXIV)
-- Sociedade Brasileira de Diabetes. *Manejo da hiperglicemia hospitalar em pacientes não críticos* e *Diretrizes clínicas para implantação de programa de controle glicêmico hospitalar* (2025)
-- American Diabetes Association. *Standards of Care in Diabetes—2026*, seção 16: Diabetes Care in the Hospital
+- American Diabetes Association. *Standards of Care in Diabetes—2026*, Section 16: Diabetes Care in the Hospital
+- Sociedade Brasileira de Diabetes. Guidelines on in-hospital hyperglycaemia management and hospital glycaemic control programmes (2025)
+- Brazil, Ministry of Health. *National Hospital Care Policy (PNHOSP)*, Ordinance No. 3,390/2013
 
-A lista completa está na seção 9 da [análise exploratória](notebooks/01_analise_exploratoria.ipynb).
+The full reference list is in section 9 of the [exploratory analysis](notebooks/01_analise_exploratoria.ipynb).
 
-## Autora
+## Author
 
-**Leticia Mendes**: projeto de portfólio que une a experiência clínica em enfermagem à engenharia e à ciência de dados.
+**Leticia Mendes**: a portfolio project bringing clinical nursing experience together with data engineering and data science.
 
-> As propostas de protocolos são recomendações para discussão e desenvolvimento institucional. Não substituem protocolos clínicos vigentes, avaliação multiprofissional ou decisões individualizadas de assistência. O dashboard é um projeto de portfólio e não deve ser usado para decisões clínicas reais.
+> The proposed protocols are recommendations for discussion and institutional development. They do not replace current clinical protocols, multidisciplinary assessment or individualised care decisions. The dashboard is a portfolio project and must not be used for real clinical decisions.
